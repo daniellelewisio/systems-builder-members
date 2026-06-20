@@ -721,6 +721,25 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
     });
   }
   renderTasks(); bindSop(); renderSteps(); setStage(1);
+
+  /* ---- broadcast height to parent for iframe auto-resize ---- */
+  (function(){
+    function sendHeight(){
+      var h=Math.max(
+        document.body.scrollHeight, document.documentElement.scrollHeight,
+        document.body.offsetHeight, document.documentElement.offsetHeight
+      );
+      if(window.parent) window.parent.postMessage({sparkSystemsHeight:h},'*');
+    }
+    window.addEventListener('load',sendHeight);
+    window.addEventListener('resize',sendHeight);
+    // content changes height as steps show/hide and lists grow
+    if(window.MutationObserver){
+      new MutationObserver(sendHeight).observe(document.body,{subtree:true,childList:true,attributes:true});
+    }
+    setInterval(sendHeight,800);
+    setTimeout(sendHeight,100);
+  })();
 })();
 </script>
 </body>
