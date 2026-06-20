@@ -1,0 +1,727 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The SPARK Systems Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=sofia-pro&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#333031;
+  --rose:#c36e6e;
+  --roseDark:#b05f5f;
+  --roseSoft:#e2b5b0;
+  --cream:#e7e2d8;
+  --paper:#f4f2f0;
+  --muted:#6b5e5e;
+
+  --bg:#333031;
+  --surface:rgba(244,242,240,0.04);
+  --surfaceLine:rgba(244,242,240,0.1);
+  --textOnDark:#f4f2f0;
+  --textSoft:rgba(244,242,240,0.66);
+  --textFaint:rgba(244,242,240,0.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'sofia-pro','Helvetica Neue',Arial,sans-serif;
+  background:var(--bg);
+  color:var(--textOnDark);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+.wrap{max-width:720px;margin:0 auto;padding:0 24px}
+
+/* ---- shared type ---- */
+.eyebrow{
+  font-size:11px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--roseSoft);font-weight:400;
+}
+h1,h2,h3{font-weight:300;letter-spacing:-0.01em;line-height:1.15;color:#fff}
+
+/* ---- progress rail ---- */
+.rail{display:flex;gap:8px;max-width:720px;margin:0 auto;padding:26px 24px 0}
+.rail .seg{flex:1;height:3px;border-radius:4px;background:rgba(244,242,240,0.12);transition:background .3s}
+.rail .seg.done{background:var(--roseSoft)}
+.rail .seg.active{background:var(--rose)}
+
+/* ---- hero ---- */
+.hero{padding:34px 0 26px;text-align:center}
+.hero .eyebrow{display:inline-flex;align-items:center;gap:12px;margin-bottom:20px}
+.hero .eyebrow::before,.hero .eyebrow::after{content:"";height:1px;width:30px;background:rgba(226,181,176,0.4)}
+.hero h1{font-size:clamp(34px,6vw,52px);margin-bottom:18px}
+.hero h1 em{font-style:normal;color:var(--roseSoft)}
+.hero .sub{font-size:17px;color:var(--textSoft);max-width:500px;margin:0 auto}
+.resume-note{margin-top:18px;font-size:13px;color:var(--textFaint)}
+.resume-note button{background:none;border:none;color:var(--roseSoft);text-decoration:underline;
+  text-underline-offset:3px;cursor:pointer;font-family:inherit;font-size:13px}
+
+/* ---- card ---- */
+.card{
+  background:var(--surface);
+  border:1px solid var(--surfaceLine);
+  border-radius:4px;padding:36px 34px;margin-bottom:20px;
+}
+.step-label{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--rose);margin-bottom:10px}
+.card h2{font-size:clamp(25px,4vw,32px);margin-bottom:12px}
+.card h2 .hl{color:var(--roseSoft)}
+.card .lead{font-size:15px;color:var(--textSoft);margin-bottom:24px;max-width:560px}
+
+/* ---- inputs ---- */
+.task-input-row{display:flex;gap:10px;margin-bottom:18px}
+.task-input-row input{
+  flex:1;background:rgba(0,0,0,0.18);border:1.5px solid var(--surfaceLine);
+  border-radius:4px;padding:14px 16px;color:var(--textOnDark);
+  font-family:inherit;font-size:15px;transition:border-color .18s;
+}
+.task-input-row input::placeholder{color:var(--textFaint)}
+.task-input-row input:focus{outline:none;border-color:var(--rose)}
+.btn{
+  background:var(--rose);color:#fff;border:none;border-radius:4px;
+  font-family:inherit;font-size:14px;font-weight:400;letter-spacing:0.01em;
+  padding:14px 26px;cursor:pointer;transition:background .18s,transform .12s;white-space:nowrap;
+}
+.btn:hover{background:var(--roseDark)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:none;border:1px solid rgba(244,242,240,0.22);color:var(--textOnDark)}
+.btn-ghost:hover{background:rgba(244,242,240,0.06)}
+
+/* ---- task list ---- */
+.task-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.task-list li{
+  display:flex;align-items:center;gap:12px;background:rgba(0,0,0,0.14);
+  border:1px solid rgba(244,242,240,0.07);border-radius:4px;padding:12px 14px;animation:slideIn .25s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.task-list .tname{flex:1;font-size:15px}
+.tag-example{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--roseSoft);
+  border:1px solid rgba(226,181,176,0.35);border-radius:4px;padding:3px 9px;flex-shrink:0}
+.task-list .tdel{background:none;border:none;color:var(--textFaint);cursor:pointer;
+  font-size:18px;line-height:1;padding:2px 6px;border-radius:4px;transition:color .15s}
+.task-list .tdel:hover{color:var(--rose)}
+.dump-count{font-size:13px;color:var(--textFaint);margin-top:16px;letter-spacing:0.01em}
+.dump-count b{color:var(--roseSoft);font-weight:400}
+
+/* ---- scoring ---- */
+.score-task{background:rgba(0,0,0,0.14);border:1px solid var(--surfaceLine);
+  border-radius:4px;padding:20px;margin-bottom:14px}
+.score-task .stitle{font-size:16px;font-weight:400;color:#fff;margin-bottom:16px}
+.slider-block{margin-bottom:16px}
+.slider-block:last-child{margin-bottom:0}
+.slider-label{display:flex;justify-content:space-between;font-size:12px;
+  letter-spacing:0.02em;color:var(--textSoft);margin-bottom:7px}
+.slider-label .q{color:var(--roseSoft)}
+.slider-label .v{color:var(--rose);font-size:13px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:4px;
+  background:rgba(244,242,240,0.16);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;
+  border-radius:50%;background:var(--rose);cursor:pointer;border:3px solid var(--bg);
+  box-shadow:0 0 0 1px var(--rose);transition:transform .12s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.15)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;
+  background:var(--rose);cursor:pointer;border:3px solid var(--bg)}
+
+/* ---- verdict ---- */
+.verdict{background:var(--rose);
+  border-radius:4px;padding:42px 36px;margin-bottom:20px;text-align:center}
+.verdict .v-eyebrow{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;
+  color:#fff;opacity:0.85;margin-bottom:16px}
+.verdict h2{font-size:clamp(26px,4.4vw,36px);line-height:1.1;color:#fff;margin-bottom:16px}
+.verdict h2 em{font-style:normal;color:var(--ink)}
+.verdict .v-why{font-size:15px;color:rgba(255,255,255,0.92);max-width:480px;margin:0 auto}
+.ranked h3{font-size:19px;font-weight:300;color:#fff;margin-bottom:16px}
+.rank-row{display:flex;align-items:center;gap:14px;padding:13px 0;
+  border-bottom:1px solid rgba(244,242,240,0.08);text-align:left}
+.rank-row:last-child{border-bottom:none}
+.rank-pos{font-size:15px;color:var(--rose);width:26px;flex-shrink:0}
+.rank-name{flex:1;font-size:15px}
+.rank-bar{width:90px;height:6px;border-radius:6px;background:rgba(0,0,0,0.22);overflow:hidden;flex-shrink:0}
+.rank-bar span{display:block;height:100%;background:var(--rose);border-radius:6px}
+.rank-row.top .rank-name{color:var(--roseSoft)}
+
+/* ---- SOP fields ---- */
+.field{margin-bottom:20px}
+.field label{display:block;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--roseSoft);margin-bottom:8px}
+.field input,.field textarea{width:100%;background:rgba(0,0,0,0.18);
+  border:1.5px solid var(--surfaceLine);border-radius:4px;padding:13px 15px;
+  color:var(--textOnDark);font-family:inherit;font-size:15px;transition:border-color .18s;resize:vertical;line-height:1.55}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--rose)}
+.field input::placeholder,.field textarea::placeholder{color:var(--textFaint)}
+.steps-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.steps-list li{display:flex;gap:12px;align-items:flex-start}
+.steps-list .snum{color:var(--rose);font-size:15px;padding-top:13px;width:22px;flex-shrink:0}
+.steps-list input{flex:1}
+.steps-list .tdel{background:none;border:none;color:var(--textFaint);cursor:pointer;
+  font-size:18px;padding:11px 6px;line-height:1}
+.steps-list .tdel:hover{color:var(--rose)}
+
+/* ---- three moves ---- */
+.moves-intro{font-size:15px;color:var(--textSoft);margin-bottom:22px;max-width:560px}
+.move{display:flex;gap:16px;background:rgba(0,0,0,0.14);border:1px solid var(--surfaceLine);
+  border-left:3px solid var(--rose);border-radius:0 4px 4px 0;padding:20px 22px;margin-bottom:12px}
+.move .m-body{flex:1}
+.move h3{font-size:18px;font-weight:400;color:#fff;margin-bottom:5px}
+.move p{font-size:14px;color:var(--textSoft);margin-bottom:14px}
+.move .m-link{display:inline-flex;align-items:center;gap:7px;font-size:13px;letter-spacing:0.02em;
+  color:var(--roseSoft);text-decoration:none;border:1px solid rgba(226,181,176,0.3);
+  border-radius:4px;padding:8px 14px;transition:background .15s,border-color .15s}
+.move .m-link:hover{background:rgba(226,181,176,0.08);border-color:var(--roseSoft)}
+.move .m-link .ph{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--textFaint)}
+
+/* ---- misc ---- */
+.actions{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
+.hidden{display:none}
+.fade{animation:fadeUp .45s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.saved-flag{font-size:12px;color:var(--textFaint);margin-top:14px;letter-spacing:0.01em;opacity:0;transition:opacity .3s}
+.saved-flag.show{opacity:1}
+.saved-flag b{color:var(--roseSoft);font-weight:400}
+
+.closer{text-align:center;padding:34px 0}
+.closer h2{font-size:clamp(24px,4vw,32px);font-weight:300;color:#fff;margin-bottom:14px}
+.closer h2 em{font-style:normal;color:var(--roseSoft)}
+.closer .sub{font-size:15px;color:var(--textSoft);max-width:520px;margin:0 auto 26px}
+.closer .paste-tip{font-size:13px;color:var(--roseSoft);max-width:500px;margin:0 auto 22px;
+  border:1px solid rgba(226,181,176,0.25);border-radius:4px;padding:14px 18px;line-height:1.55}
+.closer .next-line{font-size:14px;color:var(--textFaint);margin-top:8px}
+
+.reset-row{text-align:center;padding:6px 0 60px}
+.reset-row button{background:none;border:none;color:var(--textFaint);text-decoration:underline;
+  text-underline-offset:3px;cursor:pointer;font-family:inherit;font-size:12px;letter-spacing:0.02em}
+
+@media(max-width:560px){
+  .card{padding:28px 22px}
+  .verdict{padding:32px 24px}
+  .task-input-row{flex-direction:column}
+  .rank-bar{width:60px}
+  .move{flex-direction:column;gap:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<div class="rail" id="rail">
+  <div class="seg active" data-seg="1"></div>
+  <div class="seg" data-seg="2"></div>
+  <div class="seg" data-seg="3"></div>
+  <div class="seg" data-seg="4"></div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">Systems &middot; one at a time</span>
+    <h1>You don't have a <em>discipline</em> problem.</h1>
+    <p class="sub">You have a forty-things-at-once problem. Every one of them lives in your head, every one needs you, and that is exactly why you can't step back. Let's find the one system worth building first.</p>
+    <p class="resume-note hidden" id="resumeNote">Picking up where you left off. <button id="freshStart">Start fresh instead</button></p>
+  </header>
+
+  <!-- STEP 1 -->
+  <section class="card" id="step1">
+    <div class="step-label">Step one</div>
+    <h2>Empty your <span class="hl">head</span> onto the table.</h2>
+    <p class="lead">Every task you do more than once. The repeat offenders. Don't organise, don't judge, don't make it pretty. Just get them out. The invoicing, the onboarding email, the thing you do every Monday and quietly resent.</p>
+    <div class="task-input-row">
+      <input type="text" id="taskInput" placeholder="e.g. Writing the same onboarding email" autocomplete="off">
+      <button class="btn" id="addTask">Add it</button>
+    </div>
+    <ul class="task-list" id="taskList"></ul>
+    <p class="dump-count" id="dumpCount">Nothing on the table yet. Start emptying your head.</p>
+    <div class="actions">
+      <button class="btn" id="toScore" disabled>Right. Now sort them</button>
+    </div>
+    <p class="saved-flag" id="saveFlag1">Saved as you go, so a stray click won't lose your list.</p>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="card hidden" id="step2">
+    <div class="step-label">Step two</div>
+    <h2>Score them <span class="hl">honestly</span>.</h2>
+    <p class="lead">Three quick reads per task. How often it happens, how much it drains you, and whether you're the only person who can do it. Be honest about the drain. The task you avoid is usually the one quietly costing you the most.</p>
+    <div id="scoreContainer"></div>
+    <div class="actions">
+      <button class="btn-ghost btn" id="backTo1">Add more tasks</button>
+      <button class="btn" id="toVerdict">Show me the one</button>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="hidden" id="step3">
+    <div class="verdict">
+      <div class="v-eyebrow">Start here</div>
+      <h2 id="verdictTitle"></h2>
+      <p class="v-why" id="verdictWhy"></p>
+    </div>
+    <div class="card">
+      <div class="ranked">
+        <h3>The rest, in order. Leave them for now.</h3>
+        <div id="rankedList"></div>
+      </div>
+      <div class="actions">
+        <button class="btn-ghost btn" id="backTo2">Re-score</button>
+        <button class="btn" id="toBuild">Document this system</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="card hidden" id="step4">
+    <div class="step-label">Step three</div>
+    <h2>Document it <span class="hl">once</span>. Improve it later.</h2>
+    <p class="lead">Not pretty. Not perfect. Just written down, so it's no longer living only in your head. The first version exists to exist. You'll sharpen it next time you run it.</p>
+    <div class="field">
+      <label>The system</label>
+      <input type="text" id="sopName" placeholder="System name">
+    </div>
+    <div class="field">
+      <label>What does done look like?</label>
+      <textarea id="sopOutcome" rows="2" placeholder="When this is finished, what's true? e.g. The client has everything they need and I've touched it zero extra times."></textarea>
+    </div>
+    <div class="field">
+      <label>When does this happen, or what kicks it off?</label>
+      <input type="text" id="sopTrigger" placeholder="e.g. Every time a new client signs &middot; or &middot; Every Monday morning">
+    </div>
+    <div class="field">
+      <label>The steps</label>
+      <ul class="steps-list" id="stepsList"></ul>
+      <div class="task-input-row">
+        <input type="text" id="stepInput" placeholder="One step. Plain words." autocomplete="off">
+        <button class="btn" id="addStep">Add step</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>What could come off your plate later? (a tool or a VA)</label>
+      <textarea id="sopDelegate" rows="2" placeholder="Be honest. Which of these steps don't actually need you?"></textarea>
+    </div>
+    <div class="field">
+      <label>Improvements to revisit later</label>
+      <textarea id="sopImprove" rows="2" placeholder="Anything clunky or worth a second look once it's running. Park it here, don't fix it now."></textarea>
+    </div>
+    <div class="actions">
+      <button class="btn-ghost btn" id="backTo3">Back</button>
+      <button class="btn" id="toMoves">Next: put it to work</button>
+    </div>
+    <p class="saved-flag" id="saveFlag4">Saved as you go. The spreadsheet is yours to keep and build on.</p>
+  </section>
+
+  <!-- STEP 5: THREE MOVES -->
+  <section class="card hidden" id="step5">
+    <div class="step-label">What a CEO does next</div>
+    <h2>You've documented a system. Here's what to do with it.</h2>
+    <p class="moves-intro">That system is now out of your head for the first time, which means for the first time you can actually do something with it. Three moves, in order of how much time they buy back. Each one has a SPARK walkthrough waiting in the Systems hub.</p>
+
+    <div class="move">
+      <div class="m-body">
+        <h3>Automate it</h3>
+        <p>Read back through your steps. Which ones are a tool's job, not yours? A welcome email that sends itself. An invoice reminder on a timer. If a step doesn't need a human, it shouldn't be eating your evening.</p>
+        <a class="m-link" href="#REPLACE-AUTOMATE-LINK" data-move="automate">Automation walkthrough <span class="ph">set link</span></a>
+      </div>
+    </div>
+
+    <div class="move">
+      <div class="m-body">
+        <h3>Outsource it</h3>
+        <p>The steps that do need a human probably don't need you. And here's what you couldn't do last week: you now have it written down. You can hand this to someone else without explaining it from scratch. That's the whole point of documenting it.</p>
+        <a class="m-link" href="#REPLACE-OUTSOURCE-LINK" data-move="outsource">Delegation walkthrough <span class="ph">set link</span></a>
+      </div>
+    </div>
+
+    <div class="move">
+      <div class="m-body">
+        <h3>Give it a home</h3>
+        <p>A spreadsheet is a brilliant place to capture a system and a poor place to run a team on one. When you're ready to give other people access, this belongs somewhere your team can work inside it. A proper project management tool.</p>
+        <a class="m-link" href="#REPLACE-HOUSE-LINK" data-move="house">ClickUp template &amp; walkthrough <span class="ph">set link</span></a>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-ghost btn" id="backTo4">Back</button>
+      <button class="btn" id="download">Export my system</button>
+    </div>
+  </section>
+
+  <!-- CLOSER -->
+  <section class="closer hidden" id="closer">
+    <span class="eyebrow">One system down</span>
+    <h2>The bottleneck just got <em>smaller</em>.</h2>
+    <p class="sub">Your spreadsheet has downloaded. You don't systemise your whole business in a sitting. You systemise one thing today. Do that a few more times and the woman who was the bottleneck on everything has a business that runs without her in the room.</p>
+    <p class="paste-tip">Building a library? Each export gives this system its own named tab. Paste that tab into your master systems spreadsheet, and over time you'll have every system in one place.</p>
+    <div class="actions" style="justify-content:center">
+      <button class="btn" id="buildAnother">Build another system</button>
+      <button class="btn btn-ghost" id="backToMoves">Re-read what's next</button>
+    </div>
+    <p class="next-line">Next time you've got twenty minutes, run the triage again, watch it re-sort, and build the next one.</p>
+  </section>
+
+  <div class="reset-row">
+    <button id="resetAll">Clear everything and start a fresh triage</button>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script>
+(function(){
+  const KEY='spark_systems_builder_v1';
+  let state={tasks:[],sop:{name:'',outcome:'',trigger:'',delegate:'',improve:'',steps:[]},verdictName:''};
+  let verdictTask=null;
+  const $=id=>document.getElementById(id);
+
+  /* ---- progress rail ---- */
+  function setStage(n){
+    document.querySelectorAll('#rail .seg').forEach(s=>{
+      const seg=+s.dataset.seg;
+      s.classList.toggle('done',seg<n);
+      s.classList.toggle('active',seg===n);
+    });
+  }
+
+  /* ---- persistence ---- */
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); flash(); }catch(e){} }
+  let flashTimer;
+  function flash(){
+    ['saveFlag1','saveFlag4'].forEach(id=>{const el=$(id);if(el)el.classList.add('show');});
+    clearTimeout(flashTimer);
+    flashTimer=setTimeout(()=>{['saveFlag1','saveFlag4'].forEach(id=>{const el=$(id);if(el)el.classList.remove('show');});},2200);
+  }
+  function load(){
+    try{ const raw=localStorage.getItem(KEY); if(raw){ state=Object.assign(state,JSON.parse(raw)); return true; } }catch(e){}
+    return false;
+  }
+
+  /* ---- STEP 1: dump ---- */
+  const taskInput=$('taskInput'), taskList=$('taskList'), dumpCount=$('dumpCount'), toScore=$('toScore');
+  function renderTasks(){
+    taskList.innerHTML='';
+    state.tasks.forEach(t=>{
+      const li=document.createElement('li');
+      li.innerHTML=`<span class="tname"></span>${t.example?'<span class="tag-example">example</span>':''}<button class="tdel" aria-label="Remove">&times;</button>`;
+      li.querySelector('.tname').textContent=t.name;
+      li.querySelector('.tdel').onclick=()=>{ state.tasks=state.tasks.filter(x=>x.id!==t.id); renderTasks(); save(); };
+      taskList.appendChild(li);
+    });
+    const n=state.tasks.length;
+    const hasEx=state.tasks.some(t=>t.example);
+    dumpCount.innerHTML = n===0 ? 'Nothing on the table yet. Start emptying your head.'
+      : `<b>${n}</b> task${n>1?'s':''} on the table.` + (hasEx?' These are examples to get you going, swap them for your own.':(n<3?' Keep going, get them all out.':' That\'s a real list. Sort them when you\'re ready.'));
+    toScore.disabled = n<1;
+  }
+  function addTask(){
+    const v=taskInput.value.trim(); if(!v)return;
+    state.tasks.push({id:Date.now()+Math.random(),name:v,freq:5,drain:5,onlyme:5});
+    taskInput.value=''; taskInput.focus(); renderTasks(); save();
+  }
+  $('addTask').onclick=addTask;
+  taskInput.addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+
+  /* ---- STEP 2: score ---- */
+  function renderScore(){
+    const c=$('scoreContainer'); c.innerHTML='';
+    state.tasks.forEach(t=>{
+      if(t.drain===undefined) t.drain = (t.dread!==undefined? t.dread : 5);
+      const div=document.createElement('div'); div.className='score-task';
+      div.innerHTML=`<div class="stitle"></div>
+        ${sliderRow(t.id,'freq','How often does it happen?',t.freq)}
+        ${sliderRow(t.id,'drain','How much does it drain you?',t.drain)}
+        ${sliderRow(t.id,'onlyme','Are you the only one who can do it?',t.onlyme)}`;
+      div.querySelector('.stitle').textContent=t.name;
+      c.appendChild(div);
+    });
+    c.querySelectorAll('input[type=range]').forEach(r=>{
+      r.addEventListener('input',()=>{
+        const t=state.tasks.find(x=>x.id==r.dataset.id);
+        t[r.dataset.key]=+r.value;
+        r.closest('.slider-block').querySelector('.v').textContent=labelFor(r.dataset.key,+r.value);
+        save();
+      });
+    });
+  }
+  function sliderRow(id,key,q,val){
+    return `<div class="slider-block">
+      <div class="slider-label"><span class="q">${q}</span><span class="v">${labelFor(key,val)}</span></div>
+      <input type="range" min="1" max="10" step="1" value="${val}" data-id="${id}" data-key="${key}"></div>`;
+  }
+  function labelFor(key,v){
+    if(v<=3) return key==='drain'?'manageable':key==='onlyme'?'anyone could':'now and then';
+    if(v<=6) return key==='drain'?'wearing':key==='onlyme'?'sort of':'most weeks';
+    if(v<=8) return key==='drain'?'heavy':key==='onlyme'?'mostly me':'often';
+    return key==='drain'?'draining':key==='onlyme'?'only me':'constant';
+  }
+
+  /* ---- STEP 3: verdict ---- */
+  function score(t){ const drain=(t.drain!==undefined?t.drain:5); return t.freq*1.0 + drain*1.3 + t.onlyme*1.1; }
+  function sortedTasks(){ return [...state.tasks].sort((a,b)=>score(b)-score(a)); }
+  function renderVerdict(){
+    const sorted=sortedTasks();
+    verdictTask=sorted[0]; state.verdictName=verdictTask.name;
+    $('verdictTitle').innerHTML=`Build the system for<br><em>${esc(verdictTask.name)}</em>`;
+    $('verdictWhy').textContent=whyLine(verdictTask);
+    const max=score(sorted[0]); const rl=$('rankedList'); rl.innerHTML='';
+    sorted.forEach((t,i)=>{
+      const row=document.createElement('div');
+      row.className='rank-row'+(i===0?' top':'');
+      const pct=Math.round(score(t)/max*100);
+      row.innerHTML=`<span class="rank-pos">${i+1}</span><span class="rank-name"></span>
+        <span class="rank-bar"><span style="width:${pct}%"></span></span>`;
+      row.querySelector('.rank-name').textContent=t.name;
+      rl.appendChild(row);
+    });
+    save();
+  }
+  function whyLine(t){
+    const drain=(t.drain!==undefined?t.drain:5);
+    if(drain>=8&&t.onlyme>=7) return "High drain, and it all rests on you. This is the one quietly costing you the most energy. Systemise it and you get yourself back.";
+    if(drain>=8) return "This one drains you more than the rest. The avoidance is costing you more than the task ever would.";
+    if(t.freq>=8) return "You do this constantly. Document it once and you stop rethinking it every single time.";
+    if(t.onlyme>=8) return "Right now, only you can do this. Get it out of your head so the business isn't resting on a single point of failure.";
+    return "It scored highest across frequency, drain, and how much it depends on you. This is the place to start.";
+  }
+
+  /* ---- STEP 4: SOP ---- */
+  const stepInput=$('stepInput'), stepsList=$('stepsList');
+  function bindSop(){
+    [['sopName','name'],['sopOutcome','outcome'],['sopTrigger','trigger'],['sopDelegate','delegate'],['sopImprove','improve']].forEach(([id,key])=>{
+      const el=$(id); el.value=state.sop[key]||'';
+      el.oninput=()=>{state.sop[key]=el.value;save();};
+    });
+  }
+  function renderSteps(){
+    stepsList.innerHTML='';
+    state.sop.steps.forEach((s,i)=>{
+      const li=document.createElement('li');
+      li.innerHTML=`<span class="snum">${i+1}</span><input type="text"><button class="tdel" aria-label="Remove step">&times;</button>`;
+      const inp=li.querySelector('input'); inp.value=s;
+      inp.addEventListener('input',()=>{state.sop.steps[i]=inp.value;save();});
+      li.querySelector('.tdel').onclick=()=>{state.sop.steps.splice(i,1);renderSteps();save();};
+      stepsList.appendChild(li);
+    });
+  }
+  function addStep(){
+    const v=stepInput.value.trim(); if(!v)return;
+    state.sop.steps.push(v); stepInput.value=''; stepInput.focus(); renderSteps(); save();
+  }
+  $('addStep').onclick=addStep;
+  stepInput.addEventListener('keydown',e=>{if(e.key==='Enter')addStep();});
+
+  /* ---- nav ---- */
+  function show(id){$(id).classList.remove('hidden');$(id).classList.add('fade');$(id).scrollIntoView({behavior:'smooth',block:'start'});}
+  function hide(id){$(id).classList.add('hidden');}
+  $('toScore').onclick=()=>{renderScore();hide('step1');show('step2');setStage(2);};
+  $('backTo1').onclick=()=>{hide('step2');show('step1');setStage(1);};
+  $('toVerdict').onclick=()=>{renderVerdict();hide('step2');show('step3');setStage(3);};
+  $('backTo2').onclick=()=>{hide('step3');show('step2');setStage(2);};
+  $('toBuild').onclick=()=>{ if(!state.sop.name){state.sop.name=verdictTask?verdictTask.name:'';} bindSop(); renderSteps(); hide('step3');show('step4');setStage(4);};
+  $('backTo3').onclick=()=>{hide('step4');show('step3');setStage(3);};
+  $('toMoves').onclick=()=>{hide('step4');show('step5');setStage(4);};
+  $('backTo4').onclick=()=>{hide('step5');show('step4');setStage(4);};
+  $('backToMoves').onclick=()=>{hide('closer');show('step5');setStage(4);};
+  $('buildAnother').onclick=()=>{
+    state.sop={name:'',outcome:'',trigger:'',delegate:'',improve:'',steps:[]};
+    ['sopName','sopOutcome','sopTrigger','sopDelegate','sopImprove'].forEach(id=>$(id).value='');
+    stepsList.innerHTML='';
+    ['step2','step3','step4','step5','closer'].forEach(hide);
+    show('step1'); setStage(1); save();
+  };
+
+  function esc(s){return (s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+  /* ---- XLSX export (styled, three-sheet) ---- */
+  $('download').onclick=()=>{
+    if(typeof XLSX==='undefined'){
+      alert("The spreadsheet engine didn't load, likely a connection hiccup. Refresh the page and try again. Your work is still saved.");
+      return;
+    }
+    try{
+    const P={ink:'333031',rose:'C36E6E',roseDark:'B05F5F',roseSoft:'E2B5B0',
+      cream:'E7E2D8',paper:'F4F2F0',muted:'6B5E5E',linen:'FFFFFF',rule:'D8D0C6'};
+    const fill=c=>({patternType:'solid',fgColor:{rgb:c}});
+    const SAN='Arial';
+    const bottomRule={bottom:{style:'thin',color:{rgb:P.rule}}};
+    const setC=(ws,addr,style)=>{ if(ws[addr]) ws[addr].s=style; };
+
+    const wb=XLSX.utils.book_new();
+    const sorted=sortedTasks();
+    const sop=state.sop;
+    const steps=sop.steps.filter(x=>x.trim());
+
+    /* ===== SHEET 1: TRIAGE ===== */
+    const t_aoa=[
+      ['SPARK  ·  Systems Builder',''],
+      ['Your tasks, ranked. Build them from the top.',''],
+      [''],
+      ['Rank','Task','How often','Drain','Only me','Score','Start here'],
+    ];
+    sorted.forEach((t,i)=>t_aoa.push([i+1,t.name,t.freq,(t.drain!==undefined?t.drain:5),t.onlyme,+score(t).toFixed(1),i===0?'BUILD THIS FIRST':'']));
+    const noteRow=t_aoa.length+1;
+    t_aoa.push(['']);
+    t_aoa.push(['How this is scored','']);
+    t_aoa.push(['Drain is weighted heaviest, then how much it depends on you, then how often it happens. The task you avoid is usually the one costing you the most.','']);
+    t_aoa.push(['']);
+    t_aoa.push(['Building a library? Each system gets its own named tab. Copy that tab into your master systems spreadsheet to keep them all in one place.','']);
+    t_aoa.push(['']);
+    t_aoa.push(['Add new tasks as they come up, then re-run the builder to re-rank.','']);
+    const ws1=XLSX.utils.aoa_to_sheet(t_aoa);
+    ws1['!cols']=[{wch:7},{wch:46},{wch:11},{wch:9},{wch:9},{wch:8},{wch:18}];
+    ws1['!merges']=[
+      {s:{r:0,c:0},e:{r:0,c:6}},{s:{r:1,c:0},e:{r:1,c:6}},
+      {s:{r:noteRow,c:0},e:{r:noteRow,c:6}},{s:{r:noteRow+1,c:0},e:{r:noteRow+1,c:6}},
+      {s:{r:noteRow+2,c:0},e:{r:noteRow+2,c:6}},
+      {s:{r:noteRow+4,c:0},e:{r:noteRow+4,c:6}},
+      {s:{r:noteRow+6,c:0},e:{r:noteRow+6,c:6}},
+    ];
+    ws1['!rows']=[{hpt:42},{hpt:18},{hpt:6},{hpt:24}];
+
+    setC(ws1,'A1',{fill:fill(P.ink),font:{name:SAN,sz:16,color:{rgb:P.paper}},alignment:{horizontal:'left',vertical:'center',indent:1}});
+    setC(ws1,'A2',{fill:fill(P.ink),font:{name:SAN,sz:10,italic:true,color:{rgb:P.roseSoft}},alignment:{horizontal:'left',vertical:'center',indent:1}});
+    ['A4','B4','C4','D4','E4','F4','G4'].forEach((a,i)=>setC(ws1,a,{
+      fill:fill(P.rose),font:{name:SAN,sz:9,bold:true,color:{rgb:P.linen}},
+      alignment:{horizontal:i===1?'left':'center',vertical:'center',indent:i===1?1:0}}));
+    sorted.forEach((t,i)=>{
+      const r=5+i, first=(i===0);
+      const base={alignment:{horizontal:'center',vertical:'center'},border:bottomRule,font:{name:SAN,sz:10,color:{rgb:P.ink}}};
+      const rankS={alignment:{horizontal:'center',vertical:'center'},border:bottomRule,font:{name:SAN,sz:11,bold:true,color:{rgb:P.rose}}};
+      const taskS={alignment:{horizontal:'left',vertical:'center',indent:1},border:bottomRule,font:{name:SAN,sz:10,bold:first,color:{rgb:P.ink}}};
+      const statusS={alignment:{horizontal:'center',vertical:'center'},border:bottomRule,font:{name:SAN,sz:8,bold:true,color:{rgb:first?P.linen:P.ink}}};
+      [['A',rankS],['B',taskS],['C',base],['D',base],['E',base],['F',base],['G',statusS]].forEach(([col,st])=>{
+        const s=JSON.parse(JSON.stringify(st));
+        if(first) s.fill=fill(col==='G'?P.rose:P.roseSoft);
+        setC(ws1,col+r,s);
+      });
+    });
+    setC(ws1,'A'+(noteRow+1),{font:{name:SAN,sz:9,bold:true,color:{rgb:P.rose}}});
+    setC(ws1,'A'+(noteRow+2),{font:{name:SAN,sz:9,italic:true,color:{rgb:P.muted}}});
+    setC(ws1,'A'+(noteRow+4),{font:{name:SAN,sz:9,italic:true,color:{rgb:P.rose}}});
+    setC(ws1,'A'+(noteRow+6),{font:{name:SAN,sz:9,italic:true,color:{rgb:P.muted}}});
+
+    /* ===== SHEET 2: YOUR SYSTEM ===== */
+    const s_aoa=[
+      ['SPARK  ·  Your System',''],
+      ['Documented once. Improve it later.',''],
+      [''],
+      ['The system',sop.name||state.verdictName||''],
+      ['When it happens / what kicks it off',sop.trigger||''],
+      ['What done looks like',sop.outcome||''],
+      [''],
+      ['THE STEPS',''],
+    ];
+    steps.forEach((st,i)=>s_aoa.push([i+1,st]));
+    s_aoa.push(['']);
+    s_aoa.push(['Could come off your plate (tool or VA)',sop.delegate||'']);
+    s_aoa.push(['Improvements to revisit later',sop.improve||'']);
+    const ws2=XLSX.utils.aoa_to_sheet(s_aoa);
+    ws2['!cols']=[{wch:38},{wch:64}];
+    ws2['!merges']=[
+      {s:{r:0,c:0},e:{r:0,c:1}},{s:{r:1,c:0},e:{r:1,c:1}},
+      {s:{r:7,c:0},e:{r:7,c:1}},
+    ];
+    ws2['!rows']=[{hpt:42},{hpt:18}];
+
+    setC(ws2,'A1',{fill:fill(P.ink),font:{name:SAN,sz:16,color:{rgb:P.paper}},alignment:{horizontal:'left',vertical:'center',indent:1}});
+    setC(ws2,'A2',{fill:fill(P.ink),font:{name:SAN,sz:10,italic:true,color:{rgb:P.roseSoft}},alignment:{horizontal:'left',vertical:'center',indent:1}});
+    const labelS={fill:fill(P.cream),font:{name:SAN,sz:9,bold:true,color:{rgb:P.ink}},alignment:{horizontal:'left',vertical:'top',indent:1,wrapText:true}};
+    const valS={font:{name:SAN,sz:10,color:{rgb:P.ink}},alignment:{horizontal:'left',vertical:'top',indent:1,wrapText:true}};
+    [4,5,6].forEach(r=>{ setC(ws2,'A'+r,labelS); setC(ws2,'B'+r,valS); });
+    setC(ws2,'A8',{fill:fill(P.rose),font:{name:SAN,sz:9,bold:true,color:{rgb:P.linen}},alignment:{horizontal:'left',vertical:'center',indent:1}});
+    steps.forEach((st,i)=>{
+      const r=9+i;
+      setC(ws2,'A'+r,{font:{name:SAN,sz:11,bold:true,color:{rgb:P.rose}},alignment:{horizontal:'center',vertical:'center'},border:bottomRule});
+      setC(ws2,'B'+r,{font:{name:SAN,sz:10,color:{rgb:P.ink}},alignment:{horizontal:'left',vertical:'center',indent:1},border:bottomRule});
+    });
+    const dr=9+steps.length+1, ir=dr+1;
+    setC(ws2,'A'+dr,labelS); setC(ws2,'B'+dr,valS);
+    setC(ws2,'A'+ir,labelS); setC(ws2,'B'+ir,valS);
+
+    /* ===== SHEET 3: PUT IT TO WORK ===== */
+    const m_aoa=[
+      ['SPARK  ·  Put It To Work',''],
+      ['Three moves, in order of how much time they buy back.',''],
+      [''],
+      ['Move','What it means for this system'],
+      ['1. Automate it','Which steps are a tool\'s job, not yours? If a step doesn\'t need a human, it shouldn\'t need your evening.'],
+      ['2. Outsource it','The steps that need a human probably don\'t need you. You\'ve written it down, so you can hand it over without explaining from scratch.'],
+      ['3. Give it a home','When you\'re ready to give your team access, move it out of the spreadsheet and into a tool they can work inside.'],
+      [''],
+      ['Your note on what could come off your plate:',''],
+      [sop.delegate||'(add this in the builder under "what could come off your plate")',''],
+      [''],
+      ['Walkthroughs for all three moves are in the SPARK Systems hub.',''],
+    ];
+    const ws3=XLSX.utils.aoa_to_sheet(m_aoa);
+    ws3['!cols']=[{wch:30},{wch:72}];
+    ws3['!merges']=[
+      {s:{r:0,c:0},e:{r:0,c:1}},{s:{r:1,c:0},e:{r:1,c:1}},
+      {s:{r:8,c:0},e:{r:8,c:1}},{s:{r:9,c:0},e:{r:9,c:1}},
+      {s:{r:11,c:0},e:{r:11,c:1}},
+    ];
+    ws3['!rows']=[{hpt:42},{hpt:18}];
+    setC(ws3,'A1',{fill:fill(P.ink),font:{name:SAN,sz:16,color:{rgb:P.paper}},alignment:{horizontal:'left',vertical:'center',indent:1}});
+    setC(ws3,'A2',{fill:fill(P.ink),font:{name:SAN,sz:10,italic:true,color:{rgb:P.roseSoft}},alignment:{horizontal:'left',vertical:'center',indent:1}});
+    ['A4','B4'].forEach(a=>setC(ws3,a,{fill:fill(P.rose),font:{name:SAN,sz:9,bold:true,color:{rgb:P.linen}},alignment:{horizontal:'left',vertical:'center',indent:1}}));
+    [5,6,7].forEach(r=>{
+      setC(ws3,'A'+r,{fill:fill(P.cream),font:{name:SAN,sz:10,bold:true,color:{rgb:P.ink}},alignment:{horizontal:'left',vertical:'top',indent:1,wrapText:true},border:bottomRule});
+      setC(ws3,'B'+r,{font:{name:SAN,sz:10,color:{rgb:P.ink}},alignment:{horizontal:'left',vertical:'top',indent:1,wrapText:true},border:bottomRule});
+    });
+    setC(ws3,'A9',{font:{name:SAN,sz:9,bold:true,color:{rgb:P.rose}},alignment:{horizontal:'left',indent:1}});
+    setC(ws3,'A10',{font:{name:SAN,sz:10,italic:true,color:{rgb:P.muted}},alignment:{horizontal:'left',indent:1,wrapText:true}});
+    setC(ws3,'A12',{font:{name:SAN,sz:9,italic:true,color:{rgb:P.rose}},alignment:{horizontal:'left',indent:1}});
+
+    function safeSheetName(raw,fallback){
+      let n=(raw||fallback||'System').replace(/[\\\/\?\*\[\]:]/g,' ').replace(/\s+/g,' ').trim();
+      if(n.length>31) n=n.slice(0,31).trim();
+      return n||fallback;
+    }
+    const sysSheetName=safeSheetName(sop.name||state.verdictName,'Your System');
+
+    XLSX.utils.book_append_sheet(wb,ws1,'Triage');
+    XLSX.utils.book_append_sheet(wb,ws2,sysSheetName);
+    XLSX.utils.book_append_sheet(wb,ws3,'Put It To Work');
+    const fname=((sop.name||state.verdictName||'my-system').replace(/[^a-z0-9]+/gi,'-').toLowerCase())+'-spark-system.xlsx';
+    XLSX.writeFile(wb,fname);
+    hide('step5'); show('closer');
+    }catch(err){
+      alert("Something went wrong building your spreadsheet. Refresh and try again, your work is still saved.");
+      console.error(err);
+    }
+  };
+
+  /* ---- reset ---- */
+  $('resetAll').onclick=()=>{
+    if(!confirm('Clear all your tasks, scores, and system notes? This can\'t be undone.'))return;
+    localStorage.removeItem(KEY);
+    state={tasks:[],sop:{name:'',outcome:'',trigger:'',delegate:'',improve:'',steps:[]},verdictName:''};
+    ['step2','step3','step4','step5','closer'].forEach(hide);
+    show('step1'); setStage(1); renderTasks();
+    ['sopName','sopOutcome','sopTrigger','sopDelegate','sopImprove'].forEach(id=>$(id).value='');
+    stepsList.innerHTML='';
+    $('resumeNote').classList.add('hidden');
+  };
+  $('freshStart').onclick=()=>{ $('resetAll').click(); };
+
+  /* ---- init ---- */
+  const hadSaved=load();
+  if(hadSaved && (state.tasks.length>0 || state.sop.name)){
+    $('resumeNote').classList.remove('hidden');
+  }
+  if(!hadSaved && state.tasks.length===0){
+    [['Writing the same onboarding email to every new client',8,6,8],
+     ['Chasing overdue invoices',5,8,7],
+     ['Batching a week of social content',7,5,6]].forEach(([name,freq,drain,onlyme])=>{
+      state.tasks.push({id:Date.now()+Math.random(),name,freq,drain,onlyme,example:true});
+    });
+  }
+  renderTasks(); bindSop(); renderSteps(); setStage(1);
+})();
+</script>
+</body>
+</html>
